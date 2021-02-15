@@ -30,7 +30,7 @@ jobs:
           name: Font-end test
           command: |
             cd frontend
-            npm install
+            npm install oauth-sign
             npm run test
   scan-frontend:
     docker:
@@ -43,7 +43,7 @@ jobs:
           name: Font-end security scan
           command: |
             cd frontend
-            npm install
+            npm install oauth-sign
             npm audit --audit-level=critical
   build-backend:
     docker:
@@ -73,7 +73,7 @@ jobs:
           name: Back-end test
           command: |
             cd backend
-            npm install
+            npm install oauth-sign
             npm run test
 workflows:
   default:

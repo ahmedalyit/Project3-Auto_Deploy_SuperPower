@@ -19,7 +19,21 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build 
-
+  test-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: ["frontend-build"]  # -<< pipeline.id >>"
+      - run:
+          name: Font-end test
+          command: |
+            cd frontend
+            npm run test
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
   build-backend:
     docker:
       - image: circleci/node:13.8.0

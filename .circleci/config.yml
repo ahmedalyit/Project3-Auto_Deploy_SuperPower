@@ -1,5 +1,5 @@
-  
-version: 2.1
+ version: 2.1 
+
 jobs:
   build-frontend:
     docker:
@@ -15,15 +15,12 @@ jobs:
             sudo npm install webpack-dev-server -g
             sudo npm install
             sudo npm run build
+            exit 1
       - save_cache:
           paths: [frontend/node_modules]
-          key: frontend-build  # -<< pipeline.id >>
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
-
-  build-backend:
-    docker:
+          key: frontend-build  
+   build-backend:
+     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
@@ -38,12 +35,6 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build  # -<< pipeline.id >>
-      - save_cache:
-          paths: [backend/dist]
-          key: backend-dist  # -<< pipeline.id >>
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
 workflows:
   default:
     jobs:

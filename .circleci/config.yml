@@ -31,7 +31,18 @@ jobs:
           command: |
             cd frontend
             npm run test
-
+  scan-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: ["frontend-build"]  # -<< pipeline.id >>"
+      - run:
+          name: Font-end security scan
+          command: |
+            cd frontend
+            npm audit --audit-level=critical
   build-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -70,3 +81,5 @@ workflows:
           requires: [build-frontend]
       - test-backend:
           requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]

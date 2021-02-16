@@ -24,6 +24,7 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+<<<<<<< HEAD
       - restore_cache:
           keys: ["frontend-build"]
       - run:
@@ -36,10 +37,37 @@ jobs:
   build-backend:
     environment:
       CODE: 123
+=======
+      - run:
+          command: |
+            cd frontend
+            npm install
+
+      - run:
+          command: |
+            cd frontend
+            npm run build
+  test-frondend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - run:
+          command: |
+            cd frontend
+            npm install
+
+      - run:
+          command: |
+            cd frontend
+            npm run test
+  build-backend:
+>>>>>>> 854bdef (Adding Give your Application Auto-Deploy Superpowers)
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+<<<<<<< HEAD
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
@@ -51,19 +79,40 @@ jobs:
             npm install
             npm run build
 
+=======
+      - run:
+          command: |
+            cd backend
+            npm install
+
+      - run:
+          command: |
+            cd backend
+            npm run build
+>>>>>>> 854bdef (Adding Give your Application Auto-Deploy Superpowers)
   test-backend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+<<<<<<< HEAD
       - restore_cache:
           keys: ["backend-build"]
+=======
+>>>>>>> 854bdef (Adding Give your Application Auto-Deploy Superpowers)
       - run:
           command: |
             cd backend
             npm install
+<<<<<<< HEAD
             npm run test
 
+=======
+      - run:
+          command: |
+            cd backend
+            npm run test
+>>>>>>> 854bdef (Adding Give your Application Auto-Deploy Superpowers)
   audit-check-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -129,7 +178,11 @@ jobs:
 workflows:
   default:
     jobs:
+<<<<<<< HEAD
       - lint-frontend
+=======
+      - build-frontend
+>>>>>>> 854bdef (Adding Give your Application Auto-Deploy Superpowers)
       - test-frondend:
           requires:
             - build-frontend

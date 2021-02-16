@@ -129,7 +129,7 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
+      - lint-frontend
       - test-frondend:
           requires:
             - build-frontend

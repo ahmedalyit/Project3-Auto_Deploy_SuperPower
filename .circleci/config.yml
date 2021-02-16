@@ -1,61 +1,69 @@
 version: 2.1
 
 jobs:
-  build-frontend:
+  lint-frontend:
+    environment:
+      CODE: 123
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: frontend-build
       - run:
+          name: lint frontend
           command: |
             cd frontend
+            echo $code
             npm install
-
-      - run:
-          command: |
-            cd frontend
             npm run build
+
   test-frondend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - restore_cache:
+          keys: ["frontend-build"]
       - run:
+          name: Run frontend test
           command: |
             cd frontend
             npm install
-
-      - run:
-          command: |
-            cd frontend
             npm run test
+          
   build-backend:
+    environment:
+      CODE: 123
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - save_cache:
+          paths: [backend/node_modules]
+          key: backend-build
       - run:
+          name: build backend
           command: |
-            cd backend
+            cd backendtend
+            echo $code
             npm install
-
-      - run:
-          command: |
-            cd backend
             npm run build
+
   test-backend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - restore_cache:
+          keys: ["backend-build"]
       - run:
           command: |
             cd backend
             npm install
-      - run:
-          command: |
-            cd backend
             npm run test
+
   audit-check-frontend:
     docker:
       - image: circleci/node:13.8.0

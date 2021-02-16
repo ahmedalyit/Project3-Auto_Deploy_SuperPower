@@ -3,7 +3,7 @@ Description: >
 
 Parameters:
   ID:
-    Description: Unique identifier.
+    Description: "islam2550404"
     Type: String
 
 Resources:
@@ -28,10 +28,9 @@ Resources:
       InstanceType: t2.micro
       SecurityGroups:
         - Ref: InstanceSecurityGroup
-      KeyName: udacity # If you use another key pair name, you should change this value to match.
-      # If this ami id is not available for you, you can find another (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html)
-      # Ubuntu 18 or higher works fine
-      ImageId: ami-068663a3c619dd892 
+      KeyName: udacity
+       # if this ami id is not available for you, you can find another (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html)
+      ImageId: ami-07c1207a9d40bc3bd
       Tags:
         - Key: Name
           Value: !Sub backend-${ID}

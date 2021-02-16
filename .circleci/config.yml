@@ -11,11 +11,9 @@ jobs:
           key: frontend-build
       - run:
           command: |
-<<<<<<< HEAD
           name: build frontend
           command: |
             cd frontend
-            echo $code
             npm install
             npm run build
 
@@ -23,53 +21,3 @@ workflows:
   default:
     jobs:
       - build-frontend
-<<<<<<< HEAD
-      - build-backend
-      - test-frontend:
-          requires: [build-frontend]
-      - test-backend:
-          requires: [build-backend]
-      - scan-backend:
-          requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
-      - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          filters:
-            branches:
-              only: [test-feature-branch]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
-      - smoke-test:
-          requires: [deploy-backend, deploy-frontend]
-      - cloudfront-update:
-          requires: [smoke-test]
-      - cleanup:
-          requires: [cloudfront-update]
-=======
-      - test-frondend:
-          requires:
-            - build-frontend
-      - build-backend:
-          requires:
-            - test-frondend
-      - test-backend:
-          requires:
-            - build-backend
-      - audit-check-frontend:
-          requires:
-            - test-backend
-      - audit-check-backend:
-          requires:
-            - audit-check-frontend
-      - create_infrastructure_backend
-      - create_infrastructure_cloudfront
-      - create_infrastructure_frontend
-      - create_infrastructure_network
->>>>>>> 854bdefe96eb35d349a40ad123637796f19218fd

@@ -1,5 +1,6 @@
 version: 2.1
 
+<<<<<<< HEAD
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -31,17 +32,17 @@ commands:
               exit 1
             fi
             
+=======
+>>>>>>> 854bdefe96eb35d349a40ad123637796f19218fd
 jobs:
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys: [frontend-build]
       - run:
-          name: Build front-end
           command: |
+<<<<<<< HEAD
             # Your code here
             exit 1
       - save_cache:
@@ -49,10 +50,21 @@ jobs:
           key: frontend-build
 
   build-backend:
+=======
+            cd frontend
+            npm install
+
+      - run:
+          command: |
+            cd frontend
+            npm run build
+  test-frondend:
+>>>>>>> 854bdefe96eb35d349a40ad123637796f19218fd
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+<<<<<<< HEAD
       - restore_cache:
           keys: [backend-build]
       - run:
@@ -261,10 +273,111 @@ cleanup:
               # your code here
             fi
             
+=======
+      - run:
+          command: |
+            cd frontend
+            npm install
+
+      - run:
+          command: |
+            cd frontend
+            npm run test
+  build-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          command: |
+            cd backend
+            npm install
+
+      - run:
+          command: |
+            cd backend
+            npm run build
+  test-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          command: |
+            cd backend
+            npm install
+      - run:
+          command: |
+            cd backend
+            npm run test
+  audit-check-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          command: |
+            cd frontend
+            npm audit fix --audit-level=critical --force
+  audit-check-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          command: |
+            cd backend
+            npm audit fix --audit-level=critical --force 
+  create_infrastructure_backend:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Ensure backend infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/backend.yml \
+              --stack-name backend
+  create_infrastructure_cloudfront:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Ensure cloudfront infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/cloudfront.yml \
+              --stack-name cloudfront  
+  create_infrastructure_frontend:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Ensure frontend infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --stack-name frontend 
+  create_infrastructure_network:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Ensure network infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/network.yml \
+              --stack-name network                           
+>>>>>>> 854bdefe96eb35d349a40ad123637796f19218fd
 workflows:
   default:
     jobs:
       - build-frontend
+<<<<<<< HEAD
       - build-backend
       - test-frontend:
           requires: [build-frontend]
@@ -293,3 +406,24 @@ workflows:
           requires: [smoke-test]
       - cleanup:
           requires: [cloudfront-update]
+=======
+      - test-frondend:
+          requires:
+            - build-frontend
+      - build-backend:
+          requires:
+            - test-frondend
+      - test-backend:
+          requires:
+            - build-backend
+      - audit-check-frontend:
+          requires:
+            - test-backend
+      - audit-check-backend:
+          requires:
+            - audit-check-frontend
+      - create_infrastructure_backend
+      - create_infrastructure_cloudfront
+      - create_infrastructure_frontend
+      - create_infrastructure_network
+>>>>>>> 854bdefe96eb35d349a40ad123637796f19218fd

@@ -54,7 +54,9 @@ jobs:
           name: Test frontend
           command: |
             cd frontend
-            npm run test
+            rm -rf node_modules/
+            npm install
+            npm run build
                 
   test-backend:
     docker:

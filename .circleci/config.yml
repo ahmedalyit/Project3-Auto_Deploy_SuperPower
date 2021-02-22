@@ -134,6 +134,44 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt 
 
+  configure-infrastructure:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["d5:38:b3:ee:ef:d4:43:06:c2:1a:40:2d:83:88:7c:3f"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+      - run:
+          name: Install AWS-CLI
+          command: |
+            pip install awscli
+      - run:
+          name: Install OpenSSH
+          command: |
+            apk add openssh-client
+      - run:
+          name: Configure server
+          command: |
+      - run:
+          name: Configure server
+          no_output_timeout: 20m
+          command: |
+            pwd
+            cd .circleci/ansible/
+            cat inventory.txt
+            ansible-playbook -i inventory.txt configure-server.yml
+          environment:
+            ANSIBLE_HOST_KEY_CHECKING: false
+      - destroy-environment:
+          WorkflowID: "${CIRCLE_WORKFLOW_ID:0:7}"
+      # Here's where you will add some code to rollback on failure 
+
 workflows:
   default:
     jobs:
@@ -152,3 +190,5 @@ workflows:
           filters:
             branches:
               only: [main]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]

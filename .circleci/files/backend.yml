@@ -30,7 +30,7 @@ Resources:
         - Ref: InstanceSecurityGroup
       KeyName: udacity
        # if this ami id is not available for you, you can find another (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html)
-      ImageId: ami-07c1207a9d40bc3bd
+      ImageId: ami-05c53e3ce52089c5c
       Tags:
         - Key: Name
           Value: !Sub backend-${ID}

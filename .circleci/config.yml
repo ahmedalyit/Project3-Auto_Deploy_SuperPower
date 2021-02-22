@@ -112,20 +112,6 @@ jobs:
               --template-file .circleci/files/backend.yml \
               --tags project=Udapeople \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
-      - run: 
-          name: Store Backend URL in Memstash
-          command: |
-            BACKEND_IP=$(aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:Name,Values=udapeople-backend-ec2-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --output text)
-            echo "BACKEND IP:"
-            echo ${BACKEND_IP}
-            curl -H "Content-Type: text/plain" \
-               -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
-               --request PUT \
-               --data ${BACKEND_IP} https://api.memstash.io/values/backendip
 
 workflows:
   default:
@@ -141,4 +127,4 @@ workflows:
       - scan-backend:
           requires: [build-backend]
       - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend] 
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]

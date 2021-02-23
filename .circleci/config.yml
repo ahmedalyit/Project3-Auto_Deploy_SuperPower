@@ -292,13 +292,13 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            if curl -s "http://udapeople-123lr.s3-website-us-west-1.amazonaws.com" | grep "Welcome"
+            if curl -s "http://ec2-34-218-232-225.us-west-2.compute.amazonaws.com" | grep "Welcome"
             then
               return 0
             else
               return 1
             fi
-                       
+
 workflows:
   default:
     jobs:

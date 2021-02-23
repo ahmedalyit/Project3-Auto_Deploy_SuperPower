@@ -241,7 +241,8 @@ jobs:
       - run:
           name: Deploy frontend objects
           command: |
-            aws s3 cp --recursive frontend/dist "s3://udapeople-<< pipeline.parameters.workflow-id >>"  
+            aws s3 sync dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
+       # aws s3 cp --recursive frontend/dist "s3://udapeople-<< pipeline.parameters.workflow-id >>"  
       # Here's where you will add some code to rollback on failure      
 
   deploy-backend:
@@ -268,9 +269,7 @@ jobs:
           name: Deploy backend 2
           command: |
             export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook \
-              -i .circleci/ansible/inventory.txt \
-              .circleci/ansible/deploy-backend.yml
+            ansible-playbook -i .circleci/ansible/inventory.txt \.circleci/ansible/deploy-backend.yml
       - run:
           name: Install AWS CLI for rollback
           when: on_fail

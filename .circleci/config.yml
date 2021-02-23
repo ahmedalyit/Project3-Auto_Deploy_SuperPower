@@ -210,43 +210,40 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli
+      - image: amazon/aws-cli #python:3.7-alpine3.11
     steps:
       - checkout
-      - attach_workspace:
-          at: ~/
+
       - run:
           name: Install dependencies
           command: |
-            cd frontend
-            sudo npm install webpack-dev-server -g
-            sudo npm install
+            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
+            yum -y install nodejs
+            yum -y install tar gzip
+            cd ~/project/frontend
       - run:
           name: Get backend url
           command: |
-            export BACKEND_IP=$(sed -n 2p .circleci/ansible/inventory.txt)
-            export API_URL="http://${BACKEND_IP}:3030"
-
-            echo ENVIRONMENT=production > "frontend/.env"
-            echo NODE_ENV=production >> "frontend/.env"
-            echo API_URL=$API_URL >> "frontend/.env"
-
-            echo $API_URL
-      - run:
-          name: Build frontend
-          command: |
-            cd frontend
-            ls -la
-            cat .env
+            echo "PWD " $(pwd)
+            ls -la ~/project
+            BACKENDIP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
+            BACKENDDNS=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicDnsName' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
+            cd ~/project/frontend
+            touch .env
+            export API_URL="http://${BACKENDIP}:3030"
+            echo "${API_URL}" >> .env
+            cat ~/project/frontend/.env
+            #npm install webpack-dev-server -g
+            npm install
+            #npm update
+            #npm audit fix --audit-level=critical --force
             npm run build
-      - aws-cli/setup
-      - run:
-          name: Deploy frontend objects
-          command: |
-            aws s3 cp --recursive frontend/dist "s3://udapeople-kk1j287dhjppmz436-<< pipeline.parameters.workflow-id >>"
+            cat ~/project/frontend/.env
+            aws s3 cp ~/project/frontend/dist s3://udapeople-"${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+            cat ~/project/frontend/.env
+      # Here's where you will add some code to rollback on failure
+      - destroy-environment
       - revert-migrations
-      - destroy-environment 
-      # Here's where you will add some code to rollback on failure      
 
   deploy-backend:
     docker:
@@ -254,30 +251,26 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: ["d5:38:b3:ee:ef:d4:43:06:c2:1a:40:2d:83:88:7c:3f"]
+          fingerprints: ["28:ee:81:3a:67:68:8e:4d:82:8e:7c:42:58:42:75:5b"]
+
+      # attach workspace
       - attach_workspace:
-          at: ~/
+          at: ~/project/
+
       - run:
           name: Install dependencies
           command: |
-            apk add --update ansible openssh-client tar gzip 
-      - restore_cache:
-          keys: ["backend-dist"]  # -<< pipeline.id >>
-      - run:
-          name: Deploy backend
-          command: |
-            cd /home
-            tar czf backend.tar.gz -P /home/circleci/project/backend/dist
-      - run:
-          name: Deploy backend 2
-          command: |
-            export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i .circleci/ansible/inventory.txt \.circleci/ansible/deploy-backend.yml
-      - run:
-          name: Install AWS CLI for rollback
-          when: on_fail
-          command: |
-            apk add --update py3-pip && pip3 install --upgrade pip && pip3 install awscli
+            apk add --update ansible
+            pip install awscli
+            apk add --update nodejs npm
+            apk add --no-cache bash
+            apk add --update tar gzip ansible nodejs npm curl jq
+            apk add openssh-client
+            ls -la ~/project/frontend/
+            aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=udapeople" --output text >> ~/project/.circleci/ansible/inventory.txt
+            pwd
+            #tar -czvf backend.tgz /root/project/backend
+            ls -la
       # Here's where you will add some code to rollback on failure 
 
 workflows:

@@ -217,30 +217,43 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
-            yum -y install nodejs
-            yum -y install tar gzip
-            cd ~/project/frontend
+            yum install tar -y
+            yum install gzip -y
+            yum install python3-pip -y
+            yum -y install curl -y
+            curl -sL https://rpm.nodesource.com/setup_10.x | bash -
+            yum install -y nodejs
       - run:
           name: Get backend url
           command: |
-            echo "PWD " $(pwd)
-            ls -la ~/project
-            BACKENDIP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
-            BACKENDDNS=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicDnsName' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
-            cd ~/project/frontend
-            touch .env
-            export API_URL="http://${BACKENDIP}:3030"
-            echo "${API_URL}" >> .env
-            cat ~/project/frontend/.env
-            #npm install webpack-dev-server -g
-            npm install
-            #npm update
-            #npm audit fix --audit-level=critical --force
+            export BACKEND_IP=$(aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --output text)
+            echo $BACKEND_IP > .circleci/ansible/backendip
+            cd frontend
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}" 
+            npm install 
             npm run build
-            cat ~/project/frontend/.env
-            aws s3 cp ~/project/frontend/dist s3://udapeople-"${CIRCLE_WORKFLOW_ID:0:7}" --recursive
-            cat ~/project/frontend/.env
+      - persist_to_workspace:
+          root: .circleci/ansible/
+          paths:
+            - backendip
+      - store_artifacts: # See circleci.com/docs/2.0/artifacts/ for more details.
+          path: .circleci/ansible/backendip
+      - run:
+          name: copy the s3 url
+          command: |
+            echo "http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-west-2.amazonaws.com" > ./.circleci/ansible/URL02S3
+      - store_artifacts: # See circleci.com/docs/2.0/artifacts/ for more details.
+          path: .circleci/ansible/URL02S3
+      - run:
+          name: Deploy frontend objects
+          command: |
+            aws s3 cp frontend/dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+      - #destroy-environment
+      - #revert-migrations
       # Here's where you will add some code to rollback on failure
 
   deploy-backend:

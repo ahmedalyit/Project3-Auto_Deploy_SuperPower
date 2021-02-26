@@ -143,7 +143,7 @@ jobs:
             - inventory
       - run: pwd
       - run: cat .circleci/ansible/inventory
-      - destroy-environment
+      - # destroy-environment
       # Here's where you will add some code to rollback on failure
 
   configure-infrastructure:

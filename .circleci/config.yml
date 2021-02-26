@@ -258,7 +258,7 @@ deploy-frontend:
       - checkout
 
       - attach_workspace:
-          at: ~/project/
+          at: ~/
 
       - run:
           name: Install extra apps

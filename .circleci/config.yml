@@ -106,45 +106,33 @@ jobs:
     steps:
       - checkout
       - run:
-          name: installing required software
-          command: |
-            yum install tar -y
-            yum install gzip -y
-            yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-            yum install jq -y
-      - run:
-          name: Ensure back-end infrastructure exists
+          name: Ensure backend infrastructure exists
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --tags project=udapeople \
-              --stack-name "prod-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=Udapeople \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              --tags project=udapeople \
-              --stack-name "prod-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
-      - run: echo \[web\] > .circleci/ansible/inventory
+              --tags project=Udapeople \
+              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
       - run:
           name: Add back-end ip to ansible inventory
           command: |
             aws ec2 describe-instances \
-            --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-            --output text >> .circleci/ansible/inventory
-            cat .circleci/ansible/inventory
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:project,Values=udapeople" \
+              --output text >> .circleci/ansible/inventory.txt
+            cat .circleci/ansible/inventory.txt
       - persist_to_workspace:
-          root: .circleci/ansible/
+          root: ~/
           paths:
-            - inventory
-      - run: pwd
-      - run: cat .circleci/ansible/inventory
-      - # destroy-environment
-      # Here's where you will add some code to rollback on failure
+            - project/.circleci/ansible/inventory.txt 
 
   configure-infrastructure:
     docker:
@@ -304,13 +292,13 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            if curl -s "http://ec2-34-218-232-225.us-west-2.compute.amazonaws.com" | grep "Welcome"
+            if curl -s "http://udapeople-123lr.s3-website-us-west-1.amazonaws.com" | grep "Welcome"
             then
               return 0
             else
               return 1
             fi
-
+                       
 workflows:
   default:
     jobs:

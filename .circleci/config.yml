@@ -172,41 +172,38 @@ jobs:
 
   run-migrations:
     docker:
+      # Docker image here that supports NodeJS
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys: [backend-build]
       - run:
-          name: Install AWS-CLI
+          name: awscli install
           command: |
             sudo apt-get -y -qq update
-            sudo apt-get -y -qq install python3
             sudo apt-get -qq install awscli
+            sudo apt-get -y -qq install python3
       - run:
           name: Run migrations
+          no_output_timeout: 10m
           command: |
             cd backend
             npm install
-            npm run migrations > migration_${CIRCLE_WORKFLOW_ID:0:7}.txt
-            cat migration_${CIRCLE_WORKFLOW_ID:0:7}.txt           
+            npm run build
+            touch dbmigrationresults
+            npm run migrations >> dbmigrationresults
+            cat dbmigrationresults
       - run:
           name: Send migration results to memstash
           command: |
-            cd backend
-            cat migration_${CIRCLE_WORKFLOW_ID:0:7}.txt
-            result=0
-            if grep -q "has been executed successfully" migration_${CIRCLE_WORKFLOW_ID:0:7}.txt
-            then
-              result=1
+            if grep "successfully" dbmigrationresults
+            then 
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "true" https://api.memstash.io/values/<< pipeline.id >>_migrations
+            else
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "false" https://api.memstash.io/values/<< pipeline.id >>_migrations
             fi
-            curl -H "Content-Type: text/plain" \
-            -H "token: migration_${CIRCLE_WORKFLOW_ID:0:7}" \
-            --request PUT \
-            --data ${result} https://api.memstash.io/values/migration
-            
-            echo ${result}
-     # Here's where you will add some code to rollback on failure 
+      - #destroy-environment
+      - #revert-migrations
+      # Here's where you will add some code to rollback on failure
 
   deploy-backend:
     docker:

@@ -208,81 +208,69 @@ jobs:
             echo ${result}
      # Here's where you will add some code to rollback on failure 
 
-  deploy-frontend:
-    docker:
-      - image: amazon/aws-cli #python:3.7-alpine3.11
-    steps:
-      - checkout
-
-      - run:
-          name: Install dependencies
-          command: |
-            yum install tar -y
-            yum install gzip -y
-            yum install python3-pip -y
-            yum -y install curl -y
-            curl -sL https://rpm.nodesource.com/setup_10.x | bash -
-            yum install -y nodejs
-      - run:
-          name: Get backend url
-          command: |
-            export BACKEND_IP=$(aws ec2 describe-instances \
-            --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-            --output text)
-            echo $BACKEND_IP > .circleci/ansible/backendip
-            cd frontend
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}" 
-            npm install 
-            npm run build
-      - persist_to_workspace:
-          root: .circleci/ansible/
-          paths:
-            - backendip
-      - store_artifacts: # See circleci.com/docs/2.0/artifacts/ for more details.
-          path: .circleci/ansible/backendip
-      - run:
-          name: copy the s3 url
-          command: |
-            echo "http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-west-2.amazonaws.com" > ./.circleci/ansible/URL02S3
-      - store_artifacts: # See circleci.com/docs/2.0/artifacts/ for more details.
-          path: .circleci/ansible/URL02S3
-      - run:
-          name: Deploy frontend objects
-          command: |
-            aws s3 cp frontend/dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
-      - #destroy-environment
-      - #revert-migrations
-      # Here's where you will add some code to rollback on failure
-
   deploy-backend:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: << pipeline.parameters.py_alp_image >>
     steps:
       - checkout
-      - add_ssh_keys:
-          fingerprints: ["d5:38:b3:ee:ef:d4:43:06:c2:1a:40:2d:83:88:7c:3f"]
-
-      # attach workspace
-      - attach_workspace:
-          at: ~/project/
-
       - run:
-          name: Install dependencies
+          name: Install system dependencies
           command: |
-            apk add --update ansible
-            pip install awscli
-            apk add --update nodejs npm
-            apk add --no-cache bash
-            apk add --update tar gzip ansible nodejs npm curl jq
-            apk add openssh-client
-            ls -la ~/project/frontend/
-            aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=udapeople" --output text >> ~/project/.circleci/ansible/inventory.txt
-            pwd
-            #tar -czvf backend.tgz /root/project/backend
-            ls -la
-      # Here's where you will add some code to rollback on failure 
+            apk add --no-cache curl
+            apk add --no-cache --upgrade bash
+            apk add --no-cache --update ansible
+            apk add --no-cache openssh-client
+            pip3 install awscli
+      - run:
+          name: Get the public DNS of EC2 instance from https://memstash.io/
+          command: |
+            PUBLIC_DNS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/public_dns)
+            echo ${PUBLIC_DNS}
+            cd .circleci/ansible/
+            echo "[all]" > ./inventory
+            echo ${PUBLIC_DNS} >> ./inventory
+            cat ./inventory
+      - add_ssh_keys:
+          fingerprints: ["8f:73:3d:76:19:14:8c:e2:ad:21:bf:5e:3b:14:35:84"] # get it from CircleCI -> Project Settings -> SSH Keys -> Additional SSH Keys
+      - run:
+          name: Configure server via ansible to deploy the backend
+          command: |
+            printenv >> ./backend/.env
+            cd .circleci/ansible/
+            ansible-playbook -i ./inventory deploy.yml
+          no_output_timeout: 30m
+      - revert-migration
+      - #destroy-aws-resource
+      - #slack/status
+
+  deploy-frontend:
+    docker:
+      - image: << pipeline.parameters.py_alp_image >>
+    steps:
+      - checkout
+      - run:
+          name: Install system dependencies
+          command: |
+            apk add --no-cache curl
+            apk add --no-cache --upgrade bash
+            apk add --no-cache --update npm
+            pip3 install awscli
+      - run:
+          name: Build the frontend
+          command: |
+            PUBLIC_DNS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/public_dns)
+            echo ${PUBLIC_DNS}
+            export API_URL="http://${PUBLIC_DNS}:3030"
+            echo API_URL=${API_URL}
+            cd frontend
+            npm install
+            npm run build
+      - run: 
+          name: Copy built frontend files to the S3 bucket
+          command: |
+            aws s3 cp ./frontend/dist s3://udapeople-${CIRCLE_WORKFLOW_ID}/ --recursive
+      - #destroy-aws-resource
+      - #slack/status
 
   smoke-test:
     docker:

@@ -102,7 +102,7 @@ jobs:
             cd frontend
             npm update
 
-commands:
+ commands:
   destroy-aws-resource:
     description: Destroy all cloudformation stacks given a workflow ID.
     steps:
@@ -154,7 +154,7 @@ commands:
             ansible-playbook -i ./inventory db_rollback.yml
           when: on_fail
 
-parameters:
+ parameters:
   circleci_image:
     type: string
     default: circleci/node:latest
@@ -162,7 +162,7 @@ parameters:
     type: string
     default: python:3.7-alpine3.11
 
-orbs:
+ orbs:
   slack: circleci/slack@3.4.2  # for slack integration to https://udapeople.slack.com; reference: https://circleci.com/blog/continuous-integration-slack-twilio/
 
 jobs:

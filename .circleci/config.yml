@@ -221,7 +221,7 @@ jobs:
                --request PUT \
                --data ${PUBLIC_DNS} \
                https://api.memstash.io/values/public_dns
-      - destroy-aws-resource
+      - #destroy-aws-resource
       - slack/status
 
   deploy-backend:
@@ -247,7 +247,7 @@ jobs:
             echo ${PUBLIC_DNS} >> ./inventory
             cat ./inventory
       - add_ssh_keys:
-          fingerprints: ["f2:e7:96:70:ce:5d:29:68:ec:2d:1d:33:71:52:8b:05"] # get it from CircleCI -> Project Settings -> SSH Keys -> Additional SSH Keys
+          fingerprints: ["8f:73:3d:76:19:14:8c:e2:ad:21:bf:5e:3b:14:35:84"] # get it from CircleCI -> Project Settings -> SSH Keys -> Additional SSH Keys
       - run:
           name: Configure server via ansible to deploy the backend
           command: |
@@ -423,13 +423,13 @@ workflows:
           filters:
             branches:
               only: master
-      - smoke-test:
+      - #smoke-test:
           requires:
             - deploy-frontend
           filters:
             branches:
               only: master
-      - delete-old-infrastructure:
+      - #delete-old-infrastructure:
           requires:
             - smoke-test
           filters:

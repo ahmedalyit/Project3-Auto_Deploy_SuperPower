@@ -204,14 +204,6 @@ jobs:
               --region ${AWS_DEFAULT_REGION} \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
       - run:
-          name: Create/Update backend infrastructure via AWS CloudFormation
-          command: |
-            aws cloudformation deploy \
-              --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID} \
-              --template-file .circleci/files/backend.yml \
-              --region ${AWS_DEFAULT_REGION} \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
-      - run:
           name: Get and save public DNS of EC2 instance to https://memstash.io/
           command: |
             PUBLIC_DNS=$(aws ec2 describe-instances --region ${AWS_DEFAULT_REGION} --filters 'Name=tag:Name,Values=udapeople-backend-ec2-*' --query "Reservations[*].Instances[0].PublicDnsName" --output text)

@@ -163,7 +163,8 @@ jobs:
           name: Front-end test
           command: |
             cd frontend
-            npm audit --audit-level=critical
+            npm update
+            npm audit fix --audit-level=critical --force
       - slack/notify:
           branch_pattern: .+
           event: fail
@@ -184,8 +185,8 @@ jobs:
       - run:
           name: Back-end test
           command: |
-            cd backend
-            npm audit --audit-level=critical
+            cd frontend
+            npm update
       - slack/notify:
           branch_pattern: .+
           event: fail

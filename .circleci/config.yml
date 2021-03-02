@@ -13,17 +13,17 @@ commands:
         type: string
     steps:
       - run:
-          name: Destroy udapeople backend stack
+          name: Destroy udacity backend stack
           command: |
-            aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.id >>
+            aws cloudformation delete-stack --stack-name udacity-backend-<< parameters.id >>
           environment:
             TERM: xterm-256color
           when: << parameters.when >>
       - run:
-          name: Destroy udapeople frontend stack
+          name: Destroy udacity frontend stack
           command: |
-            aws s3 rm s3://udapeople-<< parameters.id >> --recursive
-            aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.id >>
+            aws s3 rm s3://udacity-<< parameters.id >> --recursive
+            aws cloudformation delete-stack --stack-name udacity-frontend-<< parameters.id >>
           environment:
               TERM: xterm-256color
           when: << parameters.when >>
@@ -208,15 +208,15 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --tags project=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
-              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udacity-backend-${CIRCLE_WORKFLOW_ID:0:7} \
+              --stack-name "udacity-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
           name: Save the new back-end url
           command: |
             BACKEND_EC2_IP=$(aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --filters "Name=tag:project,Values=udacity-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text)
             curl -H "Content-Type: text/plain" -H "token: 0cb5e8ce-7c45-4db3-84e4-d260771749fb" --request PUT --data "$BACKEND_EC2_IP" https://api.memstash.io/values/backend_ec2_ip
       - run:
@@ -224,8 +224,8 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              --tags project=udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
-              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udacity-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
+              --stack-name "udacity-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
           name: Add back-end ip to ansible .txt

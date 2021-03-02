@@ -181,51 +181,27 @@ jobs:
             npm audit fix --audit-level=critical --force
       - slack/status
 
-deploy-infrastructure:
+  configure-infrastructure:
     docker:
-      - image: amazon/aws-cli
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints: ["8f:73:3d:76:19:14:8c:e2:ad:21:bf:5e:3b:14:35:84"]
+      - attach_workspace:
+          at: ~/
       - run:
-          name: installing required software
+          name: Install dependencies
           command: |
-            yum install tar -y
-            yum install gzip -y
-            yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-            yum install jq -y
+            apk add --update tar gzip ansible curl
+            pip install awscli
       - run:
-          name: Ensure back-end infrastructure exists
+          name: Configure server
+          no_output_timeout: 30m
           command: |
-            aws cloudformation deploy \
-              --template-file .circleci/files/backend.yml \
-              --tags project=udapeople \
-              --stack-name "prod-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
-      - run:
-          name: Ensure front-end infrastructure exist
-          command: |
-            aws cloudformation deploy \
-              --template-file .circleci/files/frontend.yml \
-              --tags project=udapeople \
-              --stack-name "prod-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
-      - run: echo \[web\] > .circleci/ansible/inventory
-      - run:
-          name: Add back-end ip to ansible inventory
-          command: |
-            aws ec2 describe-instances \
-            --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-            --output text >> .circleci/ansible/inventory
-            cat .circleci/ansible/inventory
-      - persist_to_workspace:
-          root: .circleci/ansible/
-          paths:
-            - inventory
-      - run: pwd
-      - run: cat .circleci/ansible/inventory
+            cd .circleci/ansible/
+            ansible-playbook -i inventory.txt configure-server.yml
       - destroy-environment
-      # Here's where you will add some code to rollback on failure
 
   deploy-backend:
     docker:
@@ -410,13 +386,13 @@ workflows:
               ignore: master
   deploy:
     jobs:
-      - deploy-infrastructure:
+      - configure-infrastructure:
           filters:
             branches:
               only: master
       - deploy-backend:
           requires:
-            - deploy-infrastructure
+            - configure-infrastructure
           filters:
             branches:
               only: master

@@ -148,6 +148,50 @@ jobs:
           channel: $SLACK_DEFAULT_CHANNEL
           template: basic_fail_1
 
+ scan-frontend:
+    docker:
+      # Docker image here
+      - image: circleci/node:13.8.0
+    steps:
+      # Checkout code from git
+      - checkout
+      # Restore from cache
+      - restore_cache:
+          keys: [frontend-build-1]
+      # Your job code here
+      - run:
+          name: Front-end test
+          command: |
+            cd frontend
+            npm audit --audit-level=critical
+      - slack/notify:
+          branch_pattern: .+
+          event: fail
+          channel: $SLACK_DEFAULT_CHANNEL
+          template: basic_fail_1
+
+  scan-backend:
+    docker:
+      # Docker image here
+      - image: circleci/node:13.8.0
+    steps:
+      # Checkout code from git
+      - checkout
+      # Restore from cache
+      - restore_cache:
+          keys: [backend-build]
+      # Your job code here
+      - run:
+          name: Back-end test
+          command: |
+            cd backend
+            npm audit --audit-level=critical
+      - slack/notify:
+          branch_pattern: .+
+          event: fail
+          channel: $SLACK_DEFAULT_CHANNEL
+          template: basic_fail_1
+
 workflows:
   default:
     jobs:
@@ -157,3 +201,7 @@ workflows:
           requires: [build-frontend]
       - test-backend:
           requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]

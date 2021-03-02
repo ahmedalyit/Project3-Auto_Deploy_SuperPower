@@ -148,7 +148,7 @@ jobs:
           channel: $SLACK_DEFAULT_CHANNEL
           template: basic_fail_1
 
- scan-frontend:
+  scan-frontend:
     docker:
       # Docker image here
       - image: circleci/node:13.8.0

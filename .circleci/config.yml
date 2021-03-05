@@ -193,7 +193,7 @@ jobs:
           channel: $SLACK_DEFAULT_CHANNEL
           template: basic_fail_1
 
-    deploy-infrastructure:
+  deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
     steps:

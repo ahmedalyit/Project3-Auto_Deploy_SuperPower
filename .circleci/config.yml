@@ -237,7 +237,7 @@ jobs:
        #  set to trigger email notification on failure
      # - revert-migrations
       #- destroy-environment
-      
+
   configure-infrastructure: # write code to setup EC2 to run as backend
     docker:
       - image: python:3.7-alpine3.11
@@ -284,4 +284,9 @@ workflows:
           requires: [build-frontend]
       - deploy-infrastructure:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          filters:
+            branches:
+              only: [master]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
 

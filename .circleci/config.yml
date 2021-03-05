@@ -238,6 +238,37 @@ jobs:
      # - revert-migrations
       #- destroy-environment
       
+  configure-infrastructure: # write code to setup EC2 to run as backend
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["8f:73:3d:76:19:14:8c:e2:ad:21:bf:5e:3b:14:35:84"]
+      - attach_workspace: # to get access to all files needed e.g. inventory.txt
+          at: ~/
+      - run: 
+          name: Install dependencies
+          command: |
+            apk add --update tar gzip ansible nodejs npm curl
+            pip install awscli
+      - run:
+          name: Setup inventory file
+          command: |
+            cd .circleci/ansible
+            echo "[web]" >> inventory.txt
+            URLS=$(curl -H "token: 1e1e96f7-a791-42b5-b240-bd5407aa9c51" --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7})
+            echo $URLS >> inventory.txt
+            cat inventory.txt
+      - run:
+          name: Configure server
+          no_output_timeout: 30m
+          command: |
+            cd .circleci/ansible/
+            ansible-playbook -i inventory.txt main.yml
+      #- revert-migrations
+      #- destroy-environment  
+
 workflows:
   default:
     jobs:

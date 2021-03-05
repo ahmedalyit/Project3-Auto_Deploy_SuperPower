@@ -400,7 +400,10 @@ jobs:
                   --filters "Name=tag:Name, Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
                   --output text)
-                curl "http://${BACKEND_IP}:3030/api/status"
+            echo ${BACKEND_IP}
+            export URL="http://$BACKEND_IP:3030/api/status"
+            echo $URL
+            curl $URL
 #       - run:
 #         name: Get backend url and backend smoke test
 #          command: |

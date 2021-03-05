@@ -314,26 +314,28 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            curl -sL https://rpm.nodesource.com/setup_lts.x | bash - #
-            yum -y install nodejs
-            yum -y install tar gzip
+            yum -y install tar gzip 
+            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
+            yum -y install nodejs 
       - run:
-          name: Get backend url 
+          name: Get backend url
           command: |
-            BACKEND_IP=$(curl -H "token: 1e1e96f7-a791-42b5-b240-bd5407aa9c51" --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7})
+            BACKEND_IP=$(curl -H "token: IP-${CIRCLE_WORKFLOW_ID:0:9}" \
+            --request GET https://api.memstash.io/values/IP)
             export API_URL="http://${BACKEND_IP}:3030"
             echo API_URL="http://${BACKEND_IP}:3030" >> "frontend/.env"
             echo "${API_URL}"
       - run:
-          name: Deploy frontend objects (bake ip backend API_URL into the frontend)
+          name: Deploy frontend objects
           command: |
             npm install webpack-dev-server -g
             cd frontend
             npm install
             npm run build
-            aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive 
-     #- revert-migrations
-     # - destroy-environment #
+            aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+      - revert-migrations
+      - destroy-environment # Rollback on failure    
+      
   deploy-backend:
     docker:
       - image: python:3.7-alpine3.11

@@ -306,6 +306,34 @@ jobs:
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
 
+  deploy-frontend:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            curl -sL https://rpm.nodesource.com/setup_lts.x | bash - #
+            yum -y install nodejs
+            yum -y install tar gzip
+      - run:
+          name: Get backend url 
+          command: |
+            BACKEND_IP=$(curl -H "token: 1e1e96f7-a791-42b5-b240-bd5407aa9c51" --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7})
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo API_URL="http://${BACKEND_IP}:3030" >> "frontend/.env"
+            echo "${API_URL}"
+      - run:
+          name: Deploy frontend objects (bake ip backend API_URL into the frontend)
+          command: |
+            npm install webpack-dev-server -g
+            cd frontend
+            npm install
+            npm run build
+            aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive 
+     #- revert-migrations
+     # - destroy-environment #
 workflows:
   default:
     jobs:
@@ -328,4 +356,6 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure] 
+      - deploy-frontend:
+          requires: [run-migrations]
 

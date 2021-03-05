@@ -28,7 +28,7 @@ Resources:
       InstanceType: t2.micro
       SecurityGroups:
         - Ref: InstanceSecurityGroup
-      KeyName: test-ssh-key-pair
+      KeyName: Udacity
       # If this ami id is not available for you, you can find another (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html)
       ImageId: ami-005bdb005fb00e791 # ubuntu18.04
       Tags:

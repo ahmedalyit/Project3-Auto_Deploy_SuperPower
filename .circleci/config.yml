@@ -388,7 +388,7 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
-      - checkout
+      - checkout 
       - run:
           name: Smoke test backend
           command: |
@@ -416,7 +416,7 @@ jobs:
               exit 0
             else
               exit 1
-            fi  
+            fi
 
 workflows:
   default:

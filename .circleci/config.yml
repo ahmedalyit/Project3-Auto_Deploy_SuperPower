@@ -416,11 +416,7 @@ jobs:
               exit 0
             else
               exit 1
-            fi
-      - #revert-migration
-      - #auto-destruct-env
-      - slack/status:
-          fail_only: true  
+            fi  
 
 workflows:
   default:

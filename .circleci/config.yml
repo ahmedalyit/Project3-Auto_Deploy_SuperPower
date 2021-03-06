@@ -389,7 +389,6 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - write-envvars-file 
       - run:
           name: Smoke test backend
           command: |

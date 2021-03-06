@@ -396,7 +396,7 @@ jobs:
       - run:
           name: Backend smoke test
           command: |
-            BACKEND_IP=$(curl -H "token: IP-${CIRCLE_WORKFLOW_ID:0:9}" \
+            BACKEND_IP=$(curl -H "token: IP-${CIRCLE_WORKFLOW_ID:0:7}" \
                         --request GET https://api.memstash.io/values/IP)
             URL="http://$BACKEND_IP:3030/api/status"
             echo $URL
@@ -414,7 +414,7 @@ jobs:
   
       - #revert-migrations
       - #destroy-environment 
-      
+
 workflows:
   default:
     jobs:
